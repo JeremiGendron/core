@@ -16,7 +16,11 @@ exports.setUp = async () => {
     token: 'ark',
     network: 'testnet'
   }, {
+    exit: '@arkecosystem/core-p2p',
+    exclude: ['@arkecosystem/core-blockchain']
   })
 
   return container
 }
+
+exports.tearDown = async () => await container.tearDown()

@@ -19,6 +19,10 @@ beforeEach(async () => {
   })
 })
 
+afterAll(async () => {
+  await graphql.stop()
+})
+
 describe('GraphQL', () => {
   it('should be an object', () => {
     expect(graphql).toBeObject()
