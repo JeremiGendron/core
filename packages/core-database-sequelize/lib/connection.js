@@ -162,8 +162,8 @@ module.exports = class SequelizeConnection extends ConnectionInterface {
     const maxDelegates = config.getConstants(height).activeDelegates
     const round = Math.floor((height - 1) / maxDelegates) + 1
 
-    if (this.activedelegates && this.activedelegates.length && this.activedelegates[0].round === round) {
-      return this.activedelegates
+    if (this.roundDelegates && this.roundDelegates.length && this.roundDelegates[0].round === round) {
+      return this.roundDelegates
     }
 
     const data = await this.query
@@ -189,9 +189,9 @@ module.exports = class SequelizeConnection extends ConnectionInterface {
       currentSeed = crypto.createHash('sha256').update(currentSeed).digest()
     }
 
-    this.activedelegates = data
+    this.roundDelegates = data
 
-    return this.activedelegates
+    return this.roundDelegates
   }
 
   /**
@@ -773,7 +773,7 @@ module.exports = class SequelizeConnection extends ConnectionInterface {
 
   /**
    * This auxiliary method returns the number of blocks of the blockchain and
-   * is used to verify it
+   * is used to verify it.
    * @return {Number}
    */
   async __numberOfBlocks () {
@@ -787,7 +787,7 @@ module.exports = class SequelizeConnection extends ConnectionInterface {
 
   /**
    * This auxiliary method returns some stats about the blocks that are
-   * used to verify the blockchain
+   * used to verify the blockchain.
    * @return {Object}
    */
   async __blockStats () {
@@ -802,7 +802,7 @@ module.exports = class SequelizeConnection extends ConnectionInterface {
 
   /**
    * This auxiliary method returns some stats about the transactions that are
-   * used to verify the blockchain
+   * used to verify the blockchain.
    * @return {Object}
    */
   async __transactionStats () {
