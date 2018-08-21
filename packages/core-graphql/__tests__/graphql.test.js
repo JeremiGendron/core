@@ -1,7 +1,9 @@
 const app = require('./__support__/setup')
+const { tester } = require('graphql-tester')
 
 let graphql
 let logger
+let test
 
 const { testQueries,
         testData,
@@ -14,6 +16,7 @@ beforeAll(async () => {
   graphql = await container.resolvePlugin('graphql')
   logger = await container.resolvePlugin('logger')
   logger.info('Starting GraphQL Tests!')
+  test = tester({ url: 'http://localhost:4005' })
 })
 
 afterAll(() => {
@@ -28,9 +31,6 @@ describe('GraphQL', () => {
   describe('test queries', () => {
     it('should be an object', () => {
       expect(testQueries).toBeObject()
-    })
-
-    describe('basic query not to throw', async () => {
     })
   })
 
