@@ -7,7 +7,7 @@ const { testQueries,
         testData,
         testExpected,
         testHistory
-      } = require('./__fixtures__')
+      } = require('./__fixtures__/')
 
 beforeAll(async () => {
   const container = await app.setUp()
@@ -34,6 +34,23 @@ describe('GraphQL', () => {
   describe('test data', () => {
     it('should be an object', () => {
       expect(testData).toBeObject()
+      logger.info(Object.keys(testData))
+    })
+
+    describe('blocks', () => {
+      it('should have three blocks', () => {
+        expect(testData.blocks.length).toEqual(3)
+      })
+    })
+
+    describe('transactions', () => {
+      it('should have three transactions', () => {
+        expect(testData.transactions.length).toEqual(3)
+      })
+    })
+
+    describe('wallets', () => {
+      expect(testData.wallets.length).toEqual(3)
     })
   })
 
