@@ -29,6 +29,9 @@ describe('GraphQL', () => {
     it('should be an object', () => {
       expect(testQueries).toBeObject()
     })
+
+    describe('basic query not to throw', async () => {
+    })
   })
 
   describe('test data', () => {
@@ -50,7 +53,9 @@ describe('GraphQL', () => {
     })
 
     describe('wallets', () => {
-      expect(testData.wallets.length).toEqual(3)
+      it('should have three wallets', () => {
+        expect(testData.wallets.length).toEqual(3)
+      })
     })
   })
 
@@ -61,7 +66,7 @@ describe('GraphQL', () => {
   })
 
   describe('test history', () => {
-    xit('should be an object', () => { //empty json for the moment, will change
+    xit('should be an object', () => { // empty json for the moment, will change
       expect(testHistory).toBeObject()
     })
   })

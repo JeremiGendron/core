@@ -10,5 +10,5 @@ module.exports = {
   testQueries: testQueries,
   testData: testData,
   testExpected: testExpected,
-  textHistory: testHistory,
+  textHistory: testHistory
 }
