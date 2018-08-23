@@ -3,16 +3,9 @@ const app = require('./__support__/setup')
 let graphql
 let logger
 
-<<<<<<< Updated upstream
-const { testQueries,
-        testData,
-        testExpected,
-        testHistory
-=======
 const { testData,
         testQueries,
         testExpected
->>>>>>> Stashed changes
       } = require('./__fixtures__')
 
 let references = {
@@ -51,9 +44,9 @@ describe('GraphQL', () => {
       expect(references.data.blocks).toBe(testData.blocks)
 
       it('should load transactions', () => {
-        for(let i = 0; i < testData.transactions.length; i++){
+        for (let i = 0; i < testData.transactions.length; i++) {
           let transaction = testData.transactions[i]
-          let blockIndex = references.data.blocks.findIndex(block => block.id == transaction.block)
+          let blockIndex = references.data.blocks.findIndex(block => block.id === transaction.block)
 
           references.data.blocks[blockIndex].transactions.push(transaction)
 
@@ -70,17 +63,85 @@ describe('GraphQL', () => {
   describe('test queries', () => {
     it('should be an object', () => {
       expect(testQueries).toBeObject()
+      logger.info('Processing test queries')
     })
-  })
-  describe('test expected', () => {
-    it('should be an object', () => {
-      expect(testExpected).toBeObject()
+
+    describe('test query for Block', () => {
+      it('should have queries', () => {
+        expect(testQueries.block.length).toBeTruthy()
+
+        logger.debug('Proceeding with Block test queries')
+
+        testQueries.block.forEach((block) => {
+          logger.info(`Processing Block test query with id: ${block.id}`)
+        })
+      })
+    })
+
+    describe('test query for Blocks', () => {
+      it('should have queries', () => {
+        expect(testQueries.blocks.length).toBeTruthy()
+
+        logger.debug('Proceeding with Blocks test queries')
+
+        testQueries.blocks.forEach((blocks) => {
+          logger.info(`Processing Blocks test query with limit: ${blocks.limit}, offset: ${blocks.offset}, orderBy: ${blocks.orderBy} and filter: ${blocks.filter}`)
+        })
+      })
+    })
+
+    describe('test query for Transaction', () => {
+      it('should have queries', () => {
+        expect(testQueries.transaction.length).toBeTruthy()
+
+        logger.debug('Proceeding with Transaction test queries')
+
+        testQueries.transaction.forEach((transaction) => {
+          logger.info(`Processing Transaction test query with id: ${transaction.id}`)
+        })
+      })
+    })
+
+    describe('test query for Transactions', () => {
+      it('should have queries', () => {
+        expect(testQueries.transactions.length).toBeTruthy()
+
+        logger.debug('Proceeding with Transactions test queries')
+
+        testQueries.transactions.forEach((transactions) => {
+          logger.info(`Processing Transactions test query with limit: ${transactions.limit}, orderBy: ${transactions.orderBy} and filter: ${transactions.filter}`)
+        })
+      })
+    })
+
+    describe('test query for Wallet', () => {
+      it('should have queries', () => {
+        expect(testQueries.wallet.length).toBeTruthy()
+
+        logger.debug('Proceeding with Wallet test queries')
+
+        testQueries.wallet.forEach((wallet) => {
+          logger.info(`Processing Wallet test query with ${Object.keys(wallet)[0]}: ${wallet[Object.keys(wallet)[0]]}`)
+        })
+      })
+    })
+
+    describe('test query for Wallets', () => {
+      it('should have queries', () => {
+        expect(testQueries.wallets.length).toBeTruthy()
+
+        logger.debug('Proceeding with Wallets test queries')
+
+        testQueries.wallets.forEach((wallets) => {
+          logger.info(`Processing Wallets test query with limit: ${wallets.limit}, orderBy: ${wallets.orderBy} and filter: ${wallets.filter}`)
+        })
+      })
     })
   })
 
-  describe('test history', () => {
-    xit('should be an object', () => { //empty json for the moment, will change
-      expect(testHistory).toBeObject()
+  describe('test expected', () => {
+    it('should be an object', () => {
+      expect(testExpected).toBeObject()
     })
   })
 })
