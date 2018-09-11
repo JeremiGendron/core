@@ -1,0 +1,191 @@
+A Hapi server is initiated with the configuration "host" and "port"
+Then, the plugin for graphqlHapi by apollo is registerd to the server
+The "schema" used during registration is makeExecutableSchema({typeDefs, resolvers})
+typeDefs has 3 components: inputs, root and types all added together
+Inputs can be scalars JSON, Limit, Offset Address and definitions:
+ 
+- enum OrderDirection
+    ASC
+    DESC
+- enum TransactionType
+    TRANSFER
+    SECOND_SIGNATURE
+    DELEGATE
+    VOTE
+    MULTI_SIGNATURE
+    IPFS
+    TIMELOCK_TRANSFER
+    MULTI_PAYMENT
+    DELEGATE_REGISTRATION
+
+- input TransactionFilter
+    fee: Float
+    blockId: String
+    senderPubliKey: String
+    recipientId: Address
+    type: TransactionType
+
+- input BlockFilter
+    generatorPublicKey: String
+
+- input WalletFilter
+    vote: String
+
+- input OrderByInput
+    field: String
+    direction: OrderDirection
+
+Here, input fields are reducers and help in Filtering the results
+
+Next up the root section of the typeDefs grants query endpoints
+`
+ type Query {
+   block(id: String): Block
+   blocks(Limit, Offset, OrderByInput, BlockFilter): [Block]
+   transaction(id: String)
+   transactions(Limit, orderByInput, TransactionFilter): []
+   wallet(Address, publicKey: String, username: String)
+   wallets(Limit, orderByInput, WalletFilter)
+ }
+ schema { Query }
+`
+
+And finally the types used by the root Query object
+`
+type Block {
+ id: String
+ version: Int!
+ timestamp
+ previousBlock: String
+ height: Int!
+ numberOfTransactions
+ totalAmount: Float
+ totalFee
+ reward
+ payloadLength: Int!
+ payloadHash: String
+ generatorPublicKey
+ blockSignature
+ transactions(Limit, Offset...): [Transaction]
+ generator: Wallet
+}
+
+type Transaction {
+ id: String
+ senderPublicKey
+ recipientId
+ vendorField
+ signature 
+
+ version: Int!
+ timestamp
+ type
+
+ amount: Float
+ fee
+
+ sender: Wallet
+ recipient
+}
+
+type Wallet {
+ address: String
+ publicKey
+ secondPublicKey
+ vote
+ username
+
+ balance: Float
+ voteBalance INSECURE
+ producedBlocks
+ missedBlocks
+
+ transactions
+ blocks
+}
+`
+
+Now that we have nice type structure we have to define resolvers
+to process Typed Queries sent to our graphql endpoint!
+
+The index for resolvers used as the gqlschema for our ApolloHapi
+server imports the relationships for Block,Wallet,Transaction
+and the queries alongside graphql-tools-types interface from Apollo
+
+Our resolvers accept:
+ - JSON: GraphQLTypes.JSON({ name: 'Json' })
+ - Limit: ^.Int({ name: 'Limit', min: 1, max: 100 })
+ - Offset: ^ '({ name: 'Offset', min: 0})
+ - Address: GraphQLTypes.String({ name: 'Address', regex: ... })
+
+ Query: queries; details on this lower
+ Block,
+ Transaction,
+ Wallet
+
+NOTE: The following queries are executed on the database plugin,
+originally a proxy for sequelize.js queries (middleware)
+
+Inside our Query object, we list the following queries:
+`
+block:
+ takes:
+  _:    internal to GraphQL implementation/3rd party
+  {id}: any object with an ID property's ID value
+ does:
+  database.blocks.findById()
+blocks:
+ takes:
+  _
+  {args}: orderBy, filter, ...params
+ does:
+  sets constants for relevant args by destructure
+  sets constant for order based on formatting helper (default DESC)
+  returns database.blocks.findAll({...filter,order,...params})
+ short:
+  process args, apply filters and params to database query, ret blocks
+
+transaction:
+ simple behaviour expected to match that of block (takes ID...)
+ after verification, they are exactly the same save return data
+
+transactions:
+ simple behaviour like blocks, though destructure arguments diff
+ verif: a few key differences, though destructure is identical
+  turns out, we also set the params.type to its constant id code (0-8)
+  also, we set transactions constant to the db call before returning
+  the unserialized transactions, this implies TX storage is serialized
+  (transactions structure is stored in the "software")
+  whereas block structure is stored with internal db entries
+  blocks are persistent, transactions are volatile (no clear reason)
+  this is ARBITRARY and promotes SOFTWARE or DATABASE bloat
+  through introducing a difference in how related objects are processed
+
+wallet:
+ expected to work like block or tx, though can be gotten from 
+ pubkey or address or delegate name (memory is rusty, let me check)
+ verif: interesting, it behaves like a plural call which doesnt
+  destructure args, and adopts blocks methodology of returning
+  the call, not the constant following an async call as with TX
+
+wallets:
+ standard destructuring and ordering constants set, then async db
+  call rather than blocks approach this is tx approach
+  makes me think that tx calls are slower, hence should be async
+  while block and wallet calls have their own tables in the db
+  this is because it is expensive to store txes by ID and they are
+  instead grouped (serialized) in blocks, so they need to be
+  processed individually following the params argument with a 
+  stricter procedure, I predict Blocks and Wallets db calls don't
+  provide as extensive params as TX calls due to the processing
+  restrictions.
+ recommendation is to offer the option to store TX with simple index
+  of TXID, blockID to speed up transaction lookup. I'd be surprised
+  if this was already implemented as this software is generally
+  really forward when it comes to thoughts you have when developing
+  it (has many devs working on it)
+ verif: the return statement is a ternary op ..
+  result? result.rows: []
+ trivia: lets check the differences between db calls to assert
+  the protocol to retrieve information from storage
+`
