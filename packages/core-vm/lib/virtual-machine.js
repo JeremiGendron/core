@@ -1,7 +1,5 @@
 'use strict'
 
-const x;
-
 module.exports = class VirtualMachine {
   /**
    * Create a new VirtualMachine instance.
@@ -10,6 +8,10 @@ module.exports = class VirtualMachine {
     this.vm = {}
   }
 
+
+  /**
+   * Retrieve given key off the VirtualMachine instance
+   */
   get (key) {
     if (!this.has(key)) {
       throw new Error(`${key} doesn't exist in storage`)
