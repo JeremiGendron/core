@@ -27,27 +27,29 @@ module.exports = class VirtualMachine {
       this.vm.opList = __opList
     }
 
-    const integral = await this.verifyIntegrity(
+    const integral = await verifyIntegrity(
 //      this.vm.opList, logger.info, logger.warn, logger.error,
-      console.log,`${this.__opListHashes()}`
+      console.log, `${this.__opListHashes()}`
     )
+
+    let status = 0;
 
     switch (integral) {
       case 0:
-        logger.error(`opList was deemed invalid`)
+        logger.error('opList was deemed invalid')
         this.emit('opList.status', 0)
-        return false
       break;
       case 1:
-        logger.info(`opList was deemed valid`)
+        logger.info('opList was deemed valid')
         this.emit('opList.status', 1)
-        return this.__setUp()
+        status = this.__setUp()
       break;
       case 2:
-        logger.warn(`opList validity couldn't be asserted`)
-        this.emit('opList.status', 0)
-        return false
+        logger.warn('opList validity couldn\'t be asserted')
+        this.emit('opList.status', 2)
     }
+
+    return status
   }
 
   /**
@@ -59,20 +61,19 @@ module.exports = class VirtualMachine {
     this.vm.events = []
     this.vm.solution = null
 
-    for (op of this.vm.opList) {
+    this.vm.opList.forEach(op => {
       this.vm.opCodes[op] = this.vm.opList[op]
-    }
+    })
   }
-
 
   /**
    * Convert the opList into hashed output to facilitate opList validation.
    */
-  __opListHashes() {
+  __opListHashes () {
     let result = {}
-    let sum = ""
+    let sum = ''
 
-    for (op of this.vm.opList) {
+    this.vm.opList.forEach(op => {
       let top = this.__hash(op)
       let bot = this.__hash(this.vm.opList[op])
 
@@ -82,7 +83,7 @@ module.exports = class VirtualMachine {
       }
 
       sum += top + bot
-    }
+    })
 
     return `opListHashes\n ${result} \n sum: ${this.__hash(sum)}`
   }
@@ -111,13 +112,10 @@ module.exports = class VirtualMachine {
 
       if (this.vm.opCodes.hasOwnProperty(op)) {
         this.vm.solution = await this.vm.opCodes[op](params, this.call)
-
       } else throw new Error({message: `opCode ${opCode} undefined`, code: 0x404})
     } catch (e) {
-
       logger.error(`couldn't finish ${this.vm.call}\n Error: ${e.message}\n Code: ${e.code} `)
       this.emit('vm.error', `${this.vm.call}`)
-
     }
   }
 
@@ -141,7 +139,7 @@ module.exports = class VirtualMachine {
     this.vm.stack = []
   }
 
-  clearEvents () {
+  clearSolution () {
     this.vm.solution = null
   }
 

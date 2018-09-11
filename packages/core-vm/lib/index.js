@@ -13,7 +13,16 @@ exports.plugin = {
   async register (container, options) {
     container.resolvePluggin('logger').info('Instantiating Virtual Machine')
 
-    return new VirtualMachine(options)
+    const machine = new VirtualMachine(options.opList)
+
+    if (!process.env.ARK_SKIP_VM) {
+      await machine.start()
+    }
+
+    return machine
+  },
+  async deregister (container, options) {
+    await container.resolvePlugin('vm').stop()
   }
 }
 
