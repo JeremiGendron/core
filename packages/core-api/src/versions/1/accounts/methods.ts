@@ -23,11 +23,6 @@ const show = async request => {
         return respondWith("Account not found", true);
     }
 
-    // check if the wallet is cold
-    if (account.publicKey === null) {
-        return respondWith("Account not found", true);
-    }
-
     return respondWith({
         account: toResource(request, account, "account"),
     });
