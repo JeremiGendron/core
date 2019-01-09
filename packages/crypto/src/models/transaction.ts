@@ -181,21 +181,55 @@ export class Transaction {
 
     public static deserialize(hexString) {
         const transaction: any = {};
+        const two: any = {};
         const buf = ByteBuffer.fromHex(hexString, true);
+        const clone = ByteBuffer.fromHex(hexString, true);
+        clone.offset = 1;
+
         transaction.version = buf.readInt8(1);
+        console.log(transaction.version);
+        two.version = clone.readInt8();
+        console.log(two.version);
+
         transaction.network = buf.readInt8(2);
+        console.log(transaction.network);
+        two.network = clone.readInt8();
+        console.log(two.network);
+
         transaction.type = buf.readInt8(3);
+        console.log(transaction.type);
+        two.type = clone.readInt8();
+        console.log(two.type);
+
         transaction.timestamp = buf.readUint32(4);
+        console.log(transaction.timestamp);
+        two.timestamp = clone.readUint32();
+        console.log(two.timestamp);
+
         transaction.senderPublicKey = hexString.substring(16, 16 + 33 * 2);
+        console.log(transaction.senderPublicKey);
+        two.senderPublicKey = clone.readBytes(33).toString("hex");
+        console.log(two.senderPublicKey);
+
         transaction.fee = new Bignum(buf.readUint64(41) as any);
+        console.log(transaction.fee);
+        two.fee = new Bignum(clone.readUint64() as any);
+        console.log(two.fee);
 
         let vflength = 0;
+        let venlen = 0;
 
         if (Transaction.canHaveVendorField(transaction.type)) {
             vflength = buf.readInt8(41 + 8);
+            console.log(vflength);
+            venlen = clone.readInt8();
+            console.log(venlen);
 
             if (vflength > 0) {
                 transaction.vendorFieldHex = hexString.substring((41 + 8 + 1) * 2, (41 + 8 + 1) * 2 + vflength * 2);
+                console.log(transaction.vendorFieldHex);
+                two.vendorFieldHex = clone.readBytes(venlen).toString("hex");
+                console.log(two.vendorFieldHex);
             }
         }
 
@@ -203,12 +237,24 @@ export class Transaction {
 
         if (transaction.type === TransactionTypes.Transfer) {
             transaction.amount = new Bignum(buf.readUint64(assetOffset / 2) as any);
+            console.log(transaction.amount);
+            two.amount = new Bignum(clone.readUint64() as any);
+            console.log(two.amount);
+
             transaction.expiration = buf.readUint32(assetOffset / 2 + 8);
+            console.log(transaction.expiration);
+            two.expiration = clone.readUint32();
+            console.log(two.expiration);
+
             transaction.recipientId = bs58check.encode(
                 buf.buffer.slice(assetOffset / 2 + 12, assetOffset / 2 + 12 + 21),
             );
+            console.log(transaction.recipientId);
+            two.recipientId = bs58check.encode(clone.buffer.slice(clone.offset, clone.offset + 21));
+            console.log(two.recipientId);
 
             Transaction.parseSignatures(hexString, transaction, assetOffset + (21 + 12) * 2);
+            console.log(transaction.signature);
         }
 
         if (transaction.type === TransactionTypes.Vote) {
@@ -309,6 +355,10 @@ export class Transaction {
         }
 
         return transaction;
+    }
+
+    public static getSignatures(two, startOffset) {
+        two.signature = two.readBytes(startOffset);
     }
 
     public static parseSignatures(hexString, transaction, startOffset) {
