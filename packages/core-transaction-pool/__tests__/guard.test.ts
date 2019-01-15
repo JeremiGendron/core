@@ -46,8 +46,8 @@ describe("Transaction Guard", () => {
             "should not apply transactions for chained transfers involving cold wallets",
             async inverseOrder => {
                 /* The logic here is we can't have a chained transfer A => B => C if B is a cold wallet.
-                  A => B needs to be first confirmed (forged), then B can transfer to C
-                */
+                 * A => B needs to be first confirmed (forged), then B can transfer to C
+                 */
 
                 const arktoshi = 10 ** 8;
                 // don't re-use the same delegate (need clean balance)
@@ -678,7 +678,7 @@ describe("Transaction Guard", () => {
             guard.pool.transactionExists = jest.fn(() => true);
 
             const tx = { id: "1" };
-            guard.__filterAndTransformTransactions([tx]);
+            guard.filterAndTransformTransactions([tx]);
 
             expect(guard.errors[tx.id]).toEqual([
                 {
@@ -697,7 +697,7 @@ describe("Transaction Guard", () => {
             guard.pool.isSenderBlocked = jest.fn(() => true);
 
             const tx = { id: "1", senderPublicKey: "affe" };
-            guard.__filterAndTransformTransactions([tx]);
+            guard.filterAndTransformTransactions([tx]);
 
             expect(guard.errors[tx.id]).toEqual([
                 {
@@ -723,7 +723,7 @@ describe("Transaction Guard", () => {
                 senderPublicKey: "affe",
                 timestamp: slots.getTime() + secondsInFuture,
             };
-            guard.__filterAndTransformTransactions([tx]);
+            guard.filterAndTransformTransactions([tx]);
 
             expect(guard.errors[tx.id]).toEqual([
                 {
@@ -748,7 +748,7 @@ describe("Transaction Guard", () => {
                 network: 23,
                 senderPublicKey: "023ee98f453661a1cb765fd60df95b4efb1e110660ffb88ae31c2368a70f1f7359",
             };
-            guard.__filterAndTransformTransactions([tx]);
+            guard.filterAndTransformTransactions([tx]);
 
             expect(guard.errors[tx.id]).not.toEqual([
                 {
@@ -772,7 +772,7 @@ describe("Transaction Guard", () => {
                 id: "1",
                 senderPublicKey: "023ee98f453661a1cb765fd60df95b4efb1e110660ffb88ae31c2368a70f1f7359",
             };
-            guard.__filterAndTransformTransactions([tx]);
+            guard.filterAndTransformTransactions([tx]);
 
             expect(guard.errors[tx.id].type).not.toEqual("ERR_WRONG_NETWORK");
 
@@ -792,7 +792,7 @@ describe("Transaction Guard", () => {
                 network: 2,
                 senderPublicKey: "023ee98f453661a1cb765fd60df95b4efb1e110660ffb88ae31c2368a70f1f7359",
             };
-            guard.__filterAndTransformTransactions([tx]);
+            guard.filterAndTransformTransactions([tx]);
 
             expect(guard.errors[tx.id]).toEqual([
                 {
@@ -821,7 +821,7 @@ describe("Transaction Guard", () => {
             const forgedTx = transfers[2];
             database.getForgedTransactionsIds = jest.fn(() => [forgedTx.id]);
 
-            await guard.__removeForgedTransactions();
+            await guard.removeForgedTransactions();
 
             expect(guard.accept.size).toBe(3);
             expect(guard.broadcast.size).toBe(3);
@@ -844,7 +844,7 @@ describe("Transaction Guard", () => {
 
             expect(guard.errors).toEqual({});
 
-            guard.__addTransactionsToPool();
+            guard.addTransactionsToPool();
 
             expect(guard.errors).toEqual({});
             expect(guard.accept.size).toBe(4);
@@ -861,14 +861,14 @@ describe("Transaction Guard", () => {
 
             expect(guard.errors).toEqual({});
 
-            guard.__addTransactionsToPool();
+            guard.addTransactionsToPool();
 
             expect(guard.errors).toEqual({});
             expect(guard.accept.size).toBe(4);
             expect(guard.broadcast.size).toBe(4);
 
             // Adding again invokes ERR_ALREADY_IN_POOL
-            guard.__addTransactionsToPool();
+            guard.addTransactionsToPool();
 
             expect(guard.accept.size).toBe(0);
             expect(guard.broadcast.size).toBe(0);
@@ -890,7 +890,7 @@ describe("Transaction Guard", () => {
                 guard.broadcast.set(tx.id, tx);
             });
 
-            guard.__addTransactionsToPool();
+            guard.addTransactionsToPool();
 
             expect(guard.accept.size).toBe(3);
             expect(guard.broadcast.size).toBe(4);
@@ -906,7 +906,7 @@ describe("Transaction Guard", () => {
         it("should have error for transaction", () => {
             expect(guard.errors).toBeEmpty();
 
-            guard.__pushError({ id: 1 }, "ERR_INVALID", "Invalid.");
+            guard.pushError({ id: 1 }, "ERR_INVALID", "Invalid.");
 
             expect(guard.errors).toBeObject();
             expect(guard.errors["1"]).toBeArray();
@@ -920,8 +920,8 @@ describe("Transaction Guard", () => {
         it("should have multiple errors for transaction", () => {
             expect(guard.errors).toBeEmpty();
 
-            guard.__pushError({ id: 1 }, "ERR_INVALID", "Invalid 1.");
-            guard.__pushError({ id: 1 }, "ERR_INVALID", "Invalid 2.");
+            guard.pushError({ id: 1 }, "ERR_INVALID", "Invalid 1.");
+            guard.pushError({ id: 1 }, "ERR_INVALID", "Invalid 2.");
 
             expect(guard.errors).toBeObject();
             expect(guard.errors["1"]).toBeArray();
