@@ -116,4 +116,25 @@ describe("Commands - Transfer", () => {
             expect(transaction.secondSignature).toBeDefined();
         }
     });
+
+    it("should fail if amount is less than 1 satoshi", async () => {
+        const amountThatIsTooLow = 1 / 1e9;
+        const expectedErrorMessage = `Expected number greater than 1 satoshi.`;
+
+        const opts = {
+            amount: amountThatIsTooLow,
+            transferFee: 0.1,
+            number: 1,
+            secondPassphrase: "she sells sea shells down by the sea shore",
+            recipient: "DFyUhQW52sNB5PZdS7VD9HknwYrSNHPQDq",
+        };
+
+        captureTransactions(nock, []);
+
+        try {
+            await TransferCommand.run(toFlags(opts));
+        } catch (error) {
+            expect(error.message).toBe(expectedErrorMessage);
+        }
+    });
 });
